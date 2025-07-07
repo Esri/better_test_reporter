@@ -7,17 +7,24 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [stable, beta]
 
     steps:
-      - uses: actions/checkout@v3.0.2
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c # v1.7.1
+        with:
+          sdk: ${{ matrix.sdk }}
 
       - name: Install dependencies
         run: dart pub get
@@ -32,30 +39,40 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project source
-        uses: invertase/github-action-dart-analyzer@v1
+        uses: invertase/github-action-dart-analyzer@cdd8652b05bf7ed08ffce30f425436780f869f13 # v1
 
       - name: Run tests and generate coverage report
         run: ./tool/generate_code_coverage.sh
 
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@6c1aa0cc9e1c02f9f58f01ac599f1064ccc83470 # v1.1
+
       - name: Report code coverage
-        uses: zgosalvez/github-actions-report-lcov@v1.5.0
+        uses: zgosalvez/github-actions-report-lcov@eda775f552bfb2bffbdedea26f19dfb8c24a1648 # v4.1.26
         with:
           coverage-files: coverage/lcov.info
           minimum-coverage: 90
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          artifact-name: code-coverage-report
+          artifact-name: code-coverage-report-${{ matrix.sdk }}
 
   pana:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [stable, beta]
 
     steps:
-      - uses: actions/checkout@v3.0.2
-      - uses: dart-lang/setup-dart@v1.3
+      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b # v3.0.2
+
+      - uses: dart-lang/setup-dart@e51d8e571e22473a2ddebf0ef8a2123f0ab2c02c # v1.7.1
+        with:
+          sdk: ${{ matrix.sdk }}
 
       - name: Install dependencies
         run: |
           dart pub get
           dart pub global activate pana
-      
+
       - name: Verify pub score
-        run: ./tool/verify_pub_score.sh
+        run: ./tool/verify_pub_score.sh 150

@@ -16,10 +16,7 @@ class TestJsonToJunit {
   final String package;
 
   /// Constructs a TestJsonToJunit from the base string to strip out of paths and the package string to prepend to paths.
-  const TestJsonToJunit({
-    required this.base,
-    required this.package,
-  });
+  const TestJsonToJunit({required this.base, required this.package});
 
   /// Generates a string junit xml report from a [Report]
   String toXml(Report report) {
@@ -43,11 +40,7 @@ class TestJsonToJunit {
       pretty: true,
       preserveWhitespace: (XmlNode node) {
         if (node is! XmlElement) return false;
-        return [
-          'system-out',
-          'error',
-          'failure',
-        ].contains(node.name.local);
+        return ['system-out', 'error', 'failure'].contains(node.name.local);
       },
     );
   }
@@ -72,10 +65,7 @@ class TestJsonToJunit {
       'testsuite',
       attributes: attributes,
       nest: () {
-        _buildProperties(
-          builder: builder,
-          platform: suite.platform,
-        );
+        _buildProperties(builder: builder, platform: suite.platform);
         final prints = <String>[];
         for (final test in suite.allTests) {
           if (test.hidden && test.problems.isEmpty) {
@@ -89,10 +79,7 @@ class TestJsonToJunit {
             suitePath: suite.path,
           );
         }
-        _buildPrints(
-          builder: builder,
-          prints: prints,
-        );
+        _buildPrints(builder: builder, prints: prints);
       },
     );
   }
@@ -107,10 +94,7 @@ class TestJsonToJunit {
         nest: () {
           builder.element(
             'property',
-            attributes: {
-              'name': 'platform',
-              'value': platform,
-            },
+            attributes: {'name': 'platform', 'value': platform},
           );
         },
       );
@@ -127,31 +111,19 @@ class TestJsonToJunit {
       'testcase',
       attributes: {
         'classname': className,
-        'file': _buildTestFileName(
-          test: test,
-          suitePath: suitePath,
-        ),
+        'file': _buildTestFileName(test: test, suitePath: suitePath),
         'name': test.name,
         'time': _milliseconds.format(test.duration / 1000.0),
       },
       nest: () {
         if (test.skipped) builder.element('skipped');
-        _buildProblems(
-          builder: builder,
-          problems: test.problems,
-        );
-        _buildPrints(
-          builder: builder,
-          prints: test.prints,
-        );
+        _buildProblems(builder: builder, problems: test.problems);
+        _buildPrints(builder: builder, prints: test.prints);
       },
     );
   }
 
-  String _buildTestFileName({
-    required Test test,
-    String? suitePath,
-  }) {
+  String _buildTestFileName({required Test test, String? suitePath}) {
     final path = test.rootUrl ?? suitePath ?? test.url ?? 'unknown_file';
     return _convertPathToRelativePath(path);
   }
@@ -161,10 +133,7 @@ class TestJsonToJunit {
     required List<String> prints,
   }) {
     if (prints.isNotEmpty) {
-      builder.element(
-        'system-out',
-        nest: prints.join('\n'),
-      );
+      builder.element('system-out', nest: prints.join('\n'));
     }
   }
 
@@ -175,19 +144,13 @@ class TestJsonToJunit {
     if (problems.isNotEmpty) {
       final failures = problems.where((p) => p.isFailure);
       final errors = problems.where((p) => !p.isFailure);
-      final details = <String>[
-        ..._details(failures),
-        ..._details(errors),
-      ];
+      final details = <String>[..._details(failures), ..._details(errors)];
 
       final type = errors.isEmpty ? 'failure' : 'error';
       builder.element(
         type,
         attributes: {
-          'message': _message(
-            failures: failures.length,
-            errors: errors.length,
-          ),
+          'message': _message(failures: failures.length, errors: errors.length),
         },
         nest: details.join(r'\n\n\n'),
       );
@@ -227,8 +190,9 @@ class TestJsonToJunit {
       main = main.substring(0, main.length - '.dart'.length);
     }
 
-    final mainResult =
-        main.replaceAll(Platform.pathSeparator, '.').replaceAll('-', '_');
+    final mainResult = main
+        .replaceAll(Platform.pathSeparator, '.')
+        .replaceAll('-', '_');
 
     return mainResult;
   }
@@ -237,11 +201,7 @@ class TestJsonToJunit {
     final more = problems.length > 1;
     var count = 0;
     return problems.map(
-      (problem) => _report(
-        more: more,
-        index: ++count,
-        problem: problem,
-      ),
+      (problem) => _report(more: more, index: ++count, problem: problem),
     );
   }
 
@@ -275,10 +235,7 @@ class TestJsonToJunit {
     return report.join(r'\n\n');
   }
 
-  String _message({
-    required int failures,
-    required int errors,
-  }) {
+  String _message({required int failures, required int errors}) {
     final texts = <String>[];
     if (failures == 1) texts.add('1 failure');
     if (failures > 1) texts.add('$failures failures');

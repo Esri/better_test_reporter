@@ -34,13 +34,7 @@ class Processor0_1 implements Processor {
             prints: [],
           );
         },
-        testDone: (
-          time,
-          result,
-          testId,
-          hidden,
-          skipped,
-        ) {
+        testDone: (time, result, testId, hidden, skipped) {
           tests[testId] = tests[testId]!.copyWith(
             hidden: hidden,
             skipped: skipped,
@@ -54,29 +48,17 @@ class Processor0_1 implements Processor {
             platform: suite.platform,
           );
         },
-        error: (
-          time,
-          testId,
-          error,
-          stacktrace,
-          isFailure,
-        ) {
-          final problems = List<Problem>.from(tests[testId]!.problems)
-            ..add(
-              Problem(
-                message: error,
-                stacktrace: stacktrace,
-                isFailure: isFailure,
-              ),
-            );
+        error: (time, testId, error, stacktrace, isFailure) {
+          final problems = List<Problem>.from(tests[testId]!.problems)..add(
+            Problem(
+              message: error,
+              stacktrace: stacktrace,
+              isFailure: isFailure,
+            ),
+          );
           tests[testId] = tests[testId]!.copyWith(problems: problems);
         },
-        print: (
-          time,
-          testId,
-          messageType,
-          message,
-        ) {
+        print: (time, testId, messageType, message) {
           final prints = List<String>.from(tests[testId]!.prints)..add(message);
           tests[testId] = tests[testId]!.copyWith(prints: prints);
         },
